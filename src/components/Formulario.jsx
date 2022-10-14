@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react'
 import {db} from '../firebase';
-import { collection, addDoc, deleteDoc, doc, OnSnapshot, updateDoc, onSnapshot } from 'firebase/firestore';
+import { collection, addDoc, deleteDoc, doc, updateDoc, onSnapshot } from 'firebase/firestore';
 
 const Formulario = () => {
     const [fruta, setFruta] = useState('')
@@ -49,7 +49,44 @@ const Formulario = () => {
         }catch(error){
             console.log(error)
         }
+    }
 
+    const editarFrutas = async (e) => {
+        e.preventDefault()
+        try{
+            const docRef = doc(db, 'frutas', id);
+            await updateDoc(docRef, {
+                nombreFruta:fruta,
+                nombreDescripcion:descripcion
+            })
+
+            const nuevoArray = listaFrutas.map(
+                item => item.id === id ? {id: id, nombreFruta:fruta, nombreDescripcion:descripcion} : item
+            )
+            
+            setListaFrutas(nuevoArray)
+            setFruta('')
+            setDescripcion('')
+            setId('')
+            setModoEdicion(false)
+
+        }catch(error){
+            console.log(error)
+        }
+    }
+
+    const editar = item =>{
+        setFruta(item.nombreFruta)
+        setDescripcion(item.nombreDescripcion)
+        setId(item.id)
+        setModoEdicion(true)
+    }
+
+    const cancelar = () =>{
+        setModoEdicion(false)
+        setFruta('')
+        setDescripcion('')
+        setId('')
     }
 
 
@@ -68,7 +105,9 @@ const Formulario = () => {
                              <button 
                              className="btn btn-danger btn-sm float-end mx-2"
                              onClick={()=>eliminar(item.id)}>Eliminar</button>
-                             <button className="btn btn-warning btn-sm float-end">Editar</button>
+                             <button className="btn btn-warning btn-sm float-end"
+                             onClick={()=>editar(item)}
+                             >Editar</button>
                          </li>
                      ))        
                 }
@@ -79,9 +118,11 @@ const Formulario = () => {
 
         <div className="col-4">
             <h4 className="text-center">
-                Agregar Frutas
+                {
+                    modoEdicion ? 'Editar Frutas' : 'Agregar Frutas'
+                }
             </h4>
-            <form onSubmit={guardarFrutas}>
+            <form onSubmit={modoEdicion ? editarFrutas : guardarFrutas}>
                 <input type="text" 
                 className="form-control mb-2" 
                 placeholder='Ingrese Fruta'
@@ -92,12 +133,26 @@ const Formulario = () => {
                 placeholder='Ingrese Descripción'
                 value={descripcion}
                 onChange={(e)=>setDescripcion(e.target.value)}/>
-
-                <button 
+                {
+                    modoEdicion ?
+                    (
+                        <>
+                            <button
+                            className='btn btn-warning btn-block'
+                            on='submit'>Editar</button>
+                            <button
+                            className='btn btn-dark btn-block mx-2'
+                            onClick={()=>cancelar()}>Cancelar</button>
+                        </>
+                    )
+                    :
+                    
+                    <button 
                     type='submit'
                     className='btn btn-primary btn-block'>
                     Agregar
-                </button>
+                    </button>
+                }
             </form>
         </div>    
         </div>
