@@ -1,11 +1,11 @@
 
 import './App.css';
-import PeticionApi from './components/PeticionApi';
+import Formulario from './components/Formulario';
 
 function App() {
   return (
     <div>
-     <PeticionApi/>
+     <Formulario/>
 
     </div>
   );
